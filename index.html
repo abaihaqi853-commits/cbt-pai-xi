@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CBT PAI XI - SMAN 1 MOJO</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#0a0f1d',
+                            card: 'rgba(16, 24, 48, 0.75)',
+                            border: '#1e293b',
+                            accent: '#00f2fe',
+                            purple: '#7928ca',
+                            emerald: '#10b981',
+                            amber: '#f59e0b',
+                            rose: '#f43f5e'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        tech: ['"Orbitron"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styling & Neon Aesthetics */
+        body {
+            background-color: #060913;
+            color: #e2e8f0;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(121, 40, 202, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glow-accent {
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.35);
+        }
+
+        .glow-emerald {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #00f2fe;
+            border-radius: 4px;
+        }
+
+        /* Responsive Checkbox & Radio Animation */
+        .option-box {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-box:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen text-slate-100 flex flex-col justify-between">
+
+    <div id="app" class="min-h-screen flex flex-col justify-between relative overflow-x-hidden">
+
+        <!-- Top Futuristic Header -->
+        <header class="glass-panel sticky top-0 z-40 px-4 py-3 border-b border-slate-800">
+            <div class="max-w-5xl mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                        <i class="fa-solid font-tech text-xl text-white">☪</i>
+                    </div>
+                    <div>
+                        <h1 class="font-tech font-bold text-sm sm:text-base tracking-wider bg-gradient-to-r from-cyan-400 to-indigo-300 bg-clip-text text-transparent">
+                            CBT PAI XI <span class="text-xs text-cyan-400 font-normal">v2.6</span>
+                        </h1>
+                        <p class="text-[10px] sm:text-xs text-slate-400 font-medium">SMAN 1 MOJO • XI-5 s/d XI-11</p>
+                    </div>
+                </div>
+
+                <!-- Status Badges / Admin Toggle -->
+                <div class="flex items-center space-x-2">
+                    <button v-if="currentMode === 'welcome'" @click="switchView('admin-login')" class="text-xs px-3 py-1.5 rounded-lg border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 transition-all">
+                        <i class="fa-solid fa-user-shield mr-1"></i> Admin
+                    </button>
+                    <button v-if="currentMode !== 'welcome' && currentMode !== 'exam'" @click="switchView('welcome')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">
+                        <i class="fa-solid fa-house mr-1"></i> Utama
+                    </button>
+                    <div v-if="currentMode === 'exam'" class="flex items-center space-x-2 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-cyan-500/30">
+                        <i class="fa-regular fa-clock text-cyan-400 animate-pulse text-sm"></i>
+                        <span class="font-tech text-sm font-bold tracking-widest text-cyan-300">{{ formatTime(remainingTime) }}</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dynamic Content Body -->
+        <main class="flex-grow max-w-5xl w-full mx-auto p-4 sm:p-6 flex flex-col justify-center">
+
+            <!-- 1. WELCOME / STUDENT LOGIN VIEW -->
+            <div v-if="currentMode === 'welcome'" class="max-w-md mx-auto w-full space-y-6">
+                <div class="text-center space-y-2">
+                    <div class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 mb-1">
+                        Asesmen Sumatif PAI & Budi Pekerti
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-tech font-extrabold text-white tracking-tight">Portal Ujian Siswa</h2>
+                    <p class="text-xs sm:text-sm text-slate-400">Silakan isi data diri dengan teliti untuk memulai evaluasi.</p>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl space-y-4 border border-cyan-500/20 shadow-2xl relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-28 h-28 bg-cyan-500/10 rounded-full blur-2xl"></div>
+
+                    <!-- Input Nama -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">NAMA LENGKAP SISWA</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-user absolute left-3.5 top-3 text-slate-500 text-sm"></i>
+                            <input v-model="student.name" type="text" placeholder="Masukkan nama lengkap..." class="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-slate-100 placeholder-slate-600 transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Input Kelas -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">PILIH KELAS</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-graduation-cap absolute left-3.5 top-3 text-slate-500 text-sm"></i>
+                            <select v-model="student.class" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-slate-100 transition-all appearance-none cursor-pointer">
+                                <option value="" disabled>-- Pilih Kelas SMAN 1 Mojo --</option>
+                                <option v-for="c in availableClasses" :key="c" :value="c">Kelas {{ c }}</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-3.5 top-3.5 text-slate-500 text-xs pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <!-- Input Token -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">TOKEN UJIAN</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-key absolute left-3.5 top-3 text-slate-500 text-sm"></i>
+                            <input v-model="student.token" type="text" placeholder="Contoh: PAI2026" class="w-full uppercase bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm font-tech tracking-wider focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-cyan-300 placeholder-slate-600 transition-all">
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1">*Minta token ujian pada Bapak/Ibu Guru pengawas.</p>
+                    </div>
+
+                    <!-- Error Alert -->
+                    <div v-if="loginError" class="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs flex items-center space-x-2">
+                        <i class="fa-solid fa-circle-exclamation text-sm"></i>
+                        <span>{{ loginError }}</span>
+                    </div>
+
+                    <!-- Start Button -->
+                    <button @click="startExam" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-cyan-500/25 transition-all transform active:scale-98 flex items-center justify-center space-x-2">
+                        <span>MULAI ASESMEN SEKARANG</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- Info Materi Card -->
+                <div class="glass-panel p-4 rounded-xl text-xs space-y-2 text-slate-400 border border-slate-800">
+                    <p class="font-semibold text-cyan-400 flex items-center">
+                        <i class="fa-solid fa-book-bookmark mr-1.5"></i> Cakupan Materi Ujian HOTS:
+                    </p>
+                    <ul class="list-disc list-inside space-y-1 pl-1 text-[11px]">
+                        <li>Membiasakan berpikir kritis & semangat mencintai IPTEK</li>
+                        <li>Bukti beriman: Memenuhi janji, mensyukuri nikmat, memelihara lisan & menutupi aib</li>
+                        <li>Menghindari perkelahian antar pelajar, minuman keras, dan narkoba</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 2. EXAM INTERFACE VIEW -->
+            <div v-if="currentMode === 'exam'" class="space-y-4">
+                
+                <!-- Sub-bar Exam Info & Navigation Drawer Toggle -->
+                <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-3 rounded-2xl border border-slate-800 text-xs">
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded-lg font-semibold">
+                            Soal {{ currentQuestionIndex + 1 }} / {{ questions.length }}
+                        </span>
+                        <span class="px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 text-purple-300 rounded-lg text-[11px]">
+                            {{ getCategoryLabel(currentQuestion.type) }}
+                        </span>
+                    </div>
+
+                    <button @click="showPalette = !showPalette" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg flex items-center space-x-1.5 border border-slate-700">
+                        <i class="fa-solid fa-table-cells text-cyan-400"></i>
+                        <span>Navigasi Soal</span>
+                    </button>
+                </div>
+
+                <!-- Question Grid Drawer / Modal -->
+                <div v-if="showPalette" class="glass-panel p-4 rounded-2xl border border-cyan-500/30 space-y-3 animate-fadeIn">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <h3 class="text-xs font-semibold text-slate-300">PETA SOAL UJIAN</h3>
+                        <button @click="showPalette = false" class="text-slate-400 hover:text-white text-xs"><i class="fa-solid fa-xmark text-sm"></i> Tutup</button>
+                    </div>
+                    <div class="grid grid-cols-6 sm:grid-cols-10 gap-2">
+                        <button v-for="(q, index) in questions" :key="index"
+                                @click="goToQuestion(index); showPalette = false;"
+                                :class="[
+                                    'py-2 text-xs font-bold rounded-lg border transition-all',
+                                    currentQuestionIndex === index ? 'ring-2 ring-cyan-400 shadow-md shadow-cyan-500/30' : '',
+                                    isQuestionAnswered(index) ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300' : 
+                                    isQuestionFlagged(index) ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-slate-800 border-slate-700 text-slate-400'
+                                ]">
+                            {{ index + 1 }}
+                        </button>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-4 text-[10px] text-slate-400 pt-2 border-t border-slate-800">
+                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded bg-emerald-500 mr-1.5"></span>Terjawab</span>
+                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded bg-amber-500 mr-1.5"></span>Ragu-ragu</span>
+                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded bg-slate-700 mr-1.5"></span>Belum Dijawab</span>
+                    </div>
+                </div>
+
+                <!-- Question Box -->
+                <div class="glass-panel p-5 sm:p-7 rounded-2xl space-y-5 border border-slate-800 relative">
+                    
+                    <!-- Question Text -->
+                    <div class="space-y-3">
+                        <div class="text-xs font-semibold text-slate-400 tracking-wider">SOAL H.O.T.S</div>
+                        <p class="text-sm sm:text-base text-slate-100 font-medium leading-relaxed whitespace-pre-line">
+                            {{ currentQuestion.question }}
+                        </p>
+                    </div>
+
+                    <!-- TYPE 1: PILIHAN GANDA TUNGGAL (1 Correct) -->
+                    <div v-if="currentQuestion.type === 'single'" class="space-y-2.5 pt-2">
+                        <div v-for="opt in currentQuestion.options" :key="opt.key"
+                             @click="selectSingleAnswer(opt.key)"
+                             :class="[
+                                'option-box p-3.5 rounded-xl border flex items-start space-x-3 cursor-pointer select-none',
+                                userAnswers[currentQuestion.id] === opt.key ? 'bg-cyan-500/15 border-cyan-400 text-white shadow-md shadow-cyan-500/10' : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700'
+                             ]">
+                            <div :class="[
+                                'w-6 h-6 rounded-lg flex items-center justify-center font-tech text-xs font-bold border flex-shrink-0 mt-0.5',
+                                userAnswers[currentQuestion.id] === opt.key ? 'bg-cyan-500 border-cyan-300 text-slate-950' : 'border-slate-700 bg-slate-800 text-slate-400'
+                            ]">
+                                {{ opt.key }}
+                            </div>
+                            <span class="text-xs sm:text-sm leading-relaxed">{{ opt.text }}</span>
+                        </div>
+                    </div>
+
+                    <!-- TYPE 2: PILIHAN GANDA KOMPLEKS (Multiple Correct Checkboxes) -->
+                    <div v-if="currentQuestion.type === 'complex'" class="space-y-2.5 pt-2">
+                        <p class="text-[11px] text-cyan-400 italic mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Pilih lebih dari satu jawaban yang benar!</p>
+                        <div v-for="opt in currentQuestion.options" :key="opt.key"
+                             @click="toggleComplexAnswer(opt.key)"
+                             :class="[
+                                'option-box p-3.5 rounded-xl border flex items-start space-x-3 cursor-pointer select-none',
+                                isComplexSelected(opt.key) ? 'bg-cyan-500/15 border-cyan-400 text-white shadow-md shadow-cyan-500/10' : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700'
+                             ]">
+                            <div :class="[
+                                'w-6 h-6 rounded flex items-center justify-center font-tech text-xs font-bold border flex-shrink-0 mt-0.5 transition-all',
+                                isComplexSelected(opt.key) ? 'bg-cyan-500 border-cyan-300 text-slate-950' : 'border-slate-700 bg-slate-800 text-slate-400'
+                            ]">
+                                <i v-if="isComplexSelected(opt.key)" class="fa-solid fa-check text-xs"></i>
+                                <span v-else>{{ opt.key }}</span>
+                            </div>
+                            <span class="text-xs sm:text-sm leading-relaxed">{{ opt.text }}</span>
+                        </div>
+                    </div>
+
+                    <!-- TYPE 3: PILIHAN GANDA KATEGORI (Category Matching / Matrix Choice) -->
+                    <div v-if="currentQuestion.type === 'category'" class="space-y-4 pt-2">
+                        <p class="text-[11px] text-purple-400 italic"><i class="fa-solid fa-tags mr-1"></i>Pilih kategori/klasifikasi yang tepat untuk setiap item di bawah ini:</p>
+                        <div v-for="(item, idx) in currentQuestion.items" :key="idx" class="p-3.5 bg-slate-900/80 rounded-xl border border-slate-800 space-y-2">
+                            <p class="text-xs sm:text-sm text-slate-200 font-medium">{{ idx + 1 }}. {{ item.statement }}</p>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+                                <button v-for="cat in currentQuestion.categories" :key="cat"
+                                        @click="setCategoryAnswer(idx, cat)"
+                                        :class="[
+                                            'py-1.5 px-2 text-xs rounded-lg border text-center font-medium transition-all',
+                                            getCategoryAnswer(idx) === cat ? 'bg-purple-500/25 border-purple-400 text-purple-200 font-bold shadow-sm' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-750'
+                                        ]">
+                                    {{ cat }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Controls (Nav & Flag Ragu) -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800">
+                        <button @click="prevQuestion" :disabled="currentQuestionIndex === 0" 
+                                class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-40 rounded-xl text-xs font-semibold flex items-center space-x-1 border border-slate-700">
+                            <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                            <span>Sebelumnya</span>
+                        </button>
+
+                        <button @click="toggleFlag" 
+                                :class="[
+                                    'px-4 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center space-x-1.5',
+                                    isQuestionFlagged(currentQuestionIndex) ? 'bg-amber-500/30 border-amber-400 text-amber-300' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                                ]">
+                            <i class="fa-solid fa-flag text-xs"></i>
+                            <span>Ragu-ragu</span>
+                        </button>
+
+                        <button v-if="currentQuestionIndex < questions.length - 1" @click="nextQuestion" 
+                                class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl text-xs flex items-center space-x-1 shadow-md shadow-cyan-500/20">
+                            <span>Berikutnya</span>
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+
+                        <button v-else @click="confirmSubmit" 
+                                class="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-emerald-500/20 flex items-center space-x-1.5">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>SELESAI UJIAN</span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 3. RESULT VIEW -->
+            <div v-if="currentMode === 'result'" class="max-w-md mx-auto w-full space-y-6 text-center animate-fadeIn">
+                <div class="glass-panel p-6 sm:p-8 rounded-2xl border border-emerald-500/30 space-y-5 relative overflow-hidden">
+                    <div class="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-400 text-emerald-400 flex items-center justify-center text-3xl mx-auto shadow-lg shadow-emerald-500/30">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-tech font-bold text-white">Ujian Berhasil Dikirim!</h2>
+                        <p class="text-xs text-slate-400 mt-1">Jawaban Anda telah tersimpan otomatis ke dalam Spreadsheet Sistem.</p>
+                    </div>
+
+                    <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800 text-left space-y-2 text-xs">
+                        <div class="flex justify-between border-b border-slate-800 pb-1.5">
+                            <span class="text-slate-400">Nama Siswa:</span>
+                            <span class="font-bold text-slate-200">{{ student.name }}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-800 pb-1.5">
+                            <span class="text-slate-400">Kelas:</span>
+                            <span class="font-bold text-cyan-400">Kelas {{ student.class }}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-800 pb-1.5">
+                            <span class="text-slate-400">Waktu Selesai:</span>
+                            <span class="text-slate-300">{{ submitTime }}</span>
+                        </div>
+                        <div v-if="appSettings.showScoreToStudent" class="flex justify-between items-center pt-2">
+                            <span class="text-slate-300 font-semibold">Skor Perolehan:</span>
+                            <span class="font-tech text-2xl font-extrabold text-emerald-400">{{ calculatedScore.totalScore.toFixed(1) }} / 100</span>
+                        </div>
+                    </div>
+
+                    <div v-if="!appSettings.showScoreToStudent" class="p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-xl text-xs text-cyan-300">
+                        <i class="fa-solid fa-info-circle mr-1"></i> Nilai hasil ujian dikoreksi dan diumumkan oleh Guru PAI SMAN 1 Mojo.
+                    </div>
+
+                    <button @click="switchView('welcome')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-all">
+                        Kembali ke Halaman Utama
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4. ADMIN LOGIN VIEW -->
+            <div v-if="currentMode === 'admin-login'" class="max-w-xs mx-auto w-full space-y-5">
+                <div class="text-center space-y-1">
+                    <h2 class="text-xl font-tech font-bold text-white">Login Admin & Guru</h2>
+                    <p class="text-xs text-slate-400">Panel Pengaturan & Spreadsheet Nilai</p>
+                </div>
+
+                <div class="glass-panel p-5 rounded-2xl space-y-4 border border-purple-500/30 shadow-xl">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">PASSWORD ADMIN</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-3.5 top-3 text-slate-500 text-sm"></i>
+                            <input v-model="adminPasswordInput" type="password" placeholder="Password..." class="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-purple-400 text-slate-100">
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-1">*Default password: <code class="text-purple-300">admin123</code></p>
+                    </div>
+
+                    <div v-if="adminLoginError" class="p-2.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs">
+                        {{ adminLoginError }}
+                    </div>
+
+                    <button @click="loginAdmin" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-purple-500/25 transition-all">
+                        MASUK PANEL ADMIN
+                    </button>
+                </div>
+            </div>
+
+            <!-- 5. ADMIN DASHBOARD & CONTROL PANEL VIEW -->
+            <div v-if="currentMode === 'admin-panel'" class="space-y-6 animate-fadeIn">
+                
+                <!-- Admin Header & Actions -->
+                <div class="flex flex-wrap items-center justify-between gap-3 glass-panel p-4 rounded-2xl border border-purple-500/30">
+                    <div>
+                        <h2 class="text-lg font-tech font-bold text-purple-300 flex items-center">
+                            <i class="fa-solid fa-sliders mr-2"></i> PANEL KONTROL GURU & ADMIN
+                        </h2>
+                        <p class="text-xs text-slate-400">SMAN 1 MOJO • Pengaturan Ujian & Database Siswa</p>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button @click="activeAdminTab = 'results'" :class="['px-3 py-1.5 rounded-xl text-xs font-semibold transition-all', activeAdminTab === 'results' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400']">
+                            <i class="fa-solid fa-table mr-1"></i> Data Hasil
+                        </button>
+                        <button @click="activeAdminTab = 'settings'" :class="['px-3 py-1.5 rounded-xl text-xs font-semibold transition-all', activeAdminTab === 'settings' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400']">
+                            <i class="fa-solid fa-gear mr-1"></i> Setting
+                        </button>
+                        <button @click="activeAdminTab = 'password'" :class="['px-3 py-1.5 rounded-xl text-xs font-semibold transition-all', activeAdminTab === 'password' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400']">
+                            <i class="fa-solid fa-key mr-1"></i> Ubah Pass
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 1: RESULTS & SPREADSHEET MONITOR -->
+                <div v-if="activeAdminTab === 'results'" class="space-y-4">
+                    
+                    <!-- Stats Overview Badges -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="glass-panel p-3.5 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-[10px] text-slate-400">Total Peserta Ujian</span>
+                            <div class="text-xl font-tech font-bold text-cyan-400">{{ studentResults.length }} Siswa</div>
+                        </div>
+                        <div class="glass-panel p-3.5 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-[10px] text-slate-400">Rata-rata Nilai</span>
+                            <div class="text-xl font-tech font-bold text-emerald-400">{{ calculatedAverageScore }}</div>
+                        </div>
+                        <div class="glass-panel p-3.5 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-[10px] text-slate-400">Token Ujian Aktif</span>
+                            <div class="text-xl font-tech font-bold text-purple-300">{{ appSettings.token }}</div>
+                        </div>
+                        <div class="glass-panel p-3.5 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-[10px] text-slate-400">Durasi Ujian</span>
+                            <div class="text-xl font-tech font-bold text-amber-300">{{ appSettings.durationMinutes }} Menit</div>
+                        </div>
+                    </div>
+
+                    <!-- Filter & Export Controls -->
+                    <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center space-x-2">
+                            <select v-model="filterClass" class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-slate-200">
+                                <option value="ALL">Semua Kelas (XI-5 s/d XI-11)</option>
+                                <option v-for="c in availableClasses" :key="c" :value="c">Kelas {{ c }}</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <button @click="exportToCSV" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center space-x-1.5 shadow-md shadow-emerald-600/20">
+                                <i class="fa-solid fa-file-excel"></i>
+                                <span>Unduh Spreadsheet (CSV)</span>
+                            </button>
+                            <button @click="clearAllResults" class="px-3 py-2 bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 rounded-xl text-xs font-semibold">
+                                <i class="fa-solid fa-trash"></i> Reset Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Results Table -->
+                    <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-900/90 text-slate-400 font-tech border-b border-slate-800">
+                                    <tr>
+                                        <th class="p-3">No</th>
+                                        <th class="p-3">Waktu</th>
+                                        <th class="p-3">Nama Siswa</th>
+                                        <th class="p-3">Kelas</th>
+                                        <th class="p-3">PG Tunggal (10)</th>
+                                        <th class="p-3">PG Kompleks (10)</th>
+                                        <th class="p-3">PG Kategori (10)</th>
+                                        <th class="p-3 text-right">Nilai Akhir</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800/60">
+                                    <tr v-for="(res, idx) in filteredResults" :key="idx" class="hover:bg-slate-800/40 transition-all">
+                                        <td class="p-3 font-mono text-slate-500">{{ idx + 1 }}</td>
+                                        <td class="p-3 text-[11px] text-slate-400">{{ res.timestamp }}</td>
+                                        <td class="p-3 font-semibold text-slate-100">{{ res.name }}</td>
+                                        <td class="p-3"><span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-semibold">{{ res.class }}</span></td>
+                                        <td class="p-3 text-slate-300">{{ res.scoreDetails.singleCount }} / 10</td>
+                                        <td class="p-3 text-slate-300">{{ res.scoreDetails.complexCount }} / 10</td>
+                                        <td class="p-3 text-slate-300">{{ res.scoreDetails.categoryCount }} / 10</td>
+                                        <td class="p-3 text-right font-tech font-bold text-sm text-emerald-400">{{ res.scoreDetails.totalScore.toFixed(1) }}</td>
+                                    </tr>
+                                    <tr v-if="filteredResults.length === 0">
+                                        <td colspan="8" class="p-6 text-center text-slate-500 italic">Belum ada data siswa yang menyelesaikan ujian.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: APP SETTINGS & WEBHOOK SPREADSHEET -->
+                <div v-if="activeAdminTab === 'settings'" class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-5">
+                    <h3 class="text-sm font-tech font-bold text-cyan-400 border-b border-slate-800 pb-2">PENGATURAN UJIAN</h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">TOKEN UJIAN SISWA</label>
+                            <input v-model="appSettings.token" type="text" class="w-full uppercase bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-cyan-300 font-tech font-bold">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">DURASI UJIAN (MENIT)</label>
+                            <input v-model.number="appSettings.durationMinutes" type="number" min="5" max="180" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-amber-300 font-tech font-bold">
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" v-model="appSettings.showScoreToStudent" class="w-4 h-4 rounded text-purple-600 bg-slate-900 border-slate-700">
+                            <span class="text-xs text-slate-300 font-medium">Tampilkan nilai secara otomatis kepada siswa setelah selesai ujian.</span>
+                        </label>
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-4 space-y-2">
+                        <label class="block text-xs font-semibold text-slate-300">GOOGLE SHEETS WEBHOOK URL (OTOMATIS SPREADSHEET)</label>
+                        <p class="text-[11px] text-slate-400">Tempelkan Webhook Apps Script dari Google Sheets Anda di sini agar setiap jawaban siswa langsung terkirim secara *live*.</p>
+                        <input v-model="appSettings.webhookUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200">
+                    </div>
+
+                    <button @click="saveSettings" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-purple-600/20">
+                        Simpan Pengaturan Ujian
+                    </button>
+                </div>
+
+                <!-- TAB 3: CHANGE ADMIN PASSWORD -->
+                <div v-if="activeAdminTab === 'password'" class="glass-panel p-6 rounded-2xl border border-slate-800 max-w-md space-y-4">
+                    <h3 class="text-sm font-tech font-bold text-purple-300 border-b border-slate-800 pb-2">UBAH PASSWORD ADMIN</h3>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">PASSWORD LAMA</label>
+                        <input v-model="passwordForm.oldPass" type="password" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-100">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">PASSWORD BARU</label>
+                        <input v-model="passwordForm.newPass" type="password" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-100">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">KONFIRMASI PASSWORD BARU</label>
+                        <input v-model="passwordForm.confirmPass" type="password" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-100">
+                    </div>
+
+                    <div v-if="passwordStatus.msg" :class="['p-2.5 rounded-xl text-xs', passwordStatus.isError ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30']">
+                        {{ passwordStatus.msg }}
+                    </div>
+
+                    <button @click="changeAdminPassword" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-purple-600/20">
+                        Ubah Password
+                    </button>
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- Submit Confirmation Modal -->
+        <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+            <div class="glass-panel max-w-sm w-full p-6 rounded-2xl border border-cyan-500/40 text-center space-y-4 shadow-2xl">
+                <div class="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-400 text-cyan-400 flex items-center justify-center text-xl mx-auto">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h3 class="text-base font-tech font-bold text-white">Selesaikan Ujian Sekarang?</h3>
+                <p class="text-xs text-slate-300">
+                    Pastikan seluruh soal telah terjawab. Anda masih memiliki <span class="text-amber-300 font-bold">{{ unansweredCount }}</span> soal belum terisi / ragu.
+                </p>
+                <div class="flex items-center space-x-2 pt-2">
+                    <button @click="showConfirmModal = false" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl border border-slate-700">
+                        Batal
+                    </button>
+                    <button @click="submitExam" class="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-500/20">
+                        Ya, Kirim
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="py-3 px-4 border-t border-slate-900 text-center text-[11px] text-slate-600">
+            CBT Asesmen PAI Kelas XI • SMAN 1 Mojo Kediri &copy; 2026. Futuristic Exam Engine.
+        </footer>
+
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentMode: 'welcome', // 'welcome', 'exam', 'result', 'admin-login', 'admin-panel'
+                    availableClasses: ['XI-5', 'XI-6', 'XI-7', 'XI-8', 'XI-9', 'XI-10', 'XI-11'],
+                    
+                    student: {
+                        name: '',
+                        class: '',
+                        token: ''
+                    },
+                    loginError: '',
+
+                    // Admin state
+                    adminPasswordInput: '',
+                    adminLoginError: '',
+                    currentAdminPassword: 'admin123',
+                    activeAdminTab: 'results',
+                    filterClass: 'ALL',
+                    
+                    passwordForm: {
+                        oldPass: '',
+                        newPass: '',
+                        confirmPass: ''
+                    },
+                    passwordStatus: { msg: '', isError: false },
+
+                    // App Settings
+                    appSettings: {
+                        token: 'PAI2026',
+                        durationMinutes: 60,
+                        showScoreToStudent: true,
+                        webhookUrl: ''
+                    },
+
+                    // Exam logic state
+                    currentQuestionIndex: 0,
+                    userAnswers: {}, // id: answer
+                    flaggedQuestions: {}, // index: bool
+                    remainingTime: 3600, // in seconds
+                    timerInterval: null,
+                    showPalette: false,
+                    showConfirmModal: false,
+                    submitTime: '',
+                    calculatedScore: { totalScore: 0, singleCount: 0, complexCount: 0, categoryCount: 0 },
+
+                    // Results database saved locally
+                    studentResults: [],
+
+                    // 30 FULL HOTS QUESTIONS DATASET
+                    questions: [
+                        // --- 10 PILIHAN GANDA TUNGGAL (1 - 10) ---
+                        {
+                            id: 1,
+                            type: 'single',
+                            topic: 'Berpikir Kritis & IPTEK',
+                            question: 'Seorang ilmuwan Muslim meneliti struktur genomik tanaman gurun untuk menciptakan kultivar unggul penahan kekeringan. Penelitian ini dilandasi kesadaran akan keteraturan alam semesta sebagaimana tersirat dalam QS. Ali Imran: 190-191. Sikap yang paling tepat mencerminkan keterkaitan antara berpikir kritis dan keimanan berdasarkan fenomena tersebut adalah...',
+                            options: [
+                                { key: 'A', text: 'Menganggap IPTEK sebagai pelengkap ritual ibadah harian belaka.' },
+                                { key: 'B', text: 'Menjadikan analisis ilmiah atas fenomena alam sebagai sarana memperkokoh maqam marifatullah dan peningkatan kemaslahatan umat.' },
+                                { key: 'C', text: 'Memprioritaskan eksploitasi alam demi keuntungan materiil tanpa mempertimbangkan keseimbangan ekosistem.' },
+                                { key: 'D', text: 'Menerima hasil teknologi modern tanpa menguji kesesuaiannya dengan prinsip-prinsip maslahah mursalah.' },
+                                { key: 'E', text: 'Memisahkan antara temuan sains obyektif dengan keyakinan nilai-nilai spiritual keagamaan.' }
+                            ],
+                            correct: 'B'
+                        },
+                        {
+                            id: 2,
+                            type: 'single',
+                            topic: 'Berpikir Kritis & IPTEK',
+                            question: 'Banyak berita bohong (hoaks) berbasis kecerdasan buatan menyebar luas di media sosial sehingga memicu adu domba. Jika menganalisis ajaran QS. Al-Hujurat: 6 tentang prinsip tabayyun, langkah kritis terbaik seorang pelajar XI SMAN 1 Mojo dalam menyikapi narasi provokatif tersebut adalah...',
+                            options: [
+                                { key: 'A', text: 'Langsung membagikannya ke grup kelas agar teman-teman waspada.' },
+                                { key: 'B', text: 'Mengabaikan semua berita digital dan berhenti menggunakan internet.' },
+                                { key: 'C', text: 'Melakukan verifikasi fakta (cross-check) melalui sumber resmi kredibel sebelum mempercayai atau menyebarkannya.' },
+                                { key: 'D', text: 'Membeli perangkat pengacak sinyal untuk memblokir informasi.' },
+                                { key: 'E', text: 'Membalas narasi hoaks dengan membuat postingan opini pribadi secara emosional.' }
+                            ],
+                            correct: 'C'
+                        },
+                        {
+                            id: 3,
+                            type: 'single',
+                            topic: 'Berpikir Kritis & IPTEK',
+                            question: 'Islam sangat mendukung pengembangan Ilmu Pengetahuan dan Teknologi (IPTEK). Namun, pengembangan IPTEK yang tidak diimbangi dengan etika tauhid berpotensi membawa kehancuran. Karakteristik pemikir kritis islami (Ulul Albab) dalam memanfaarkan IPTEK ditunjukkan oleh...',
+                            options: [
+                                { key: 'A', text: 'Sikap senantiasa mengingat Allah SWT (dzikir) baik saat berdiri, duduk, maupun berbaring sembari memikirkan penciptaan langit dan bumi.' },
+                                { key: 'B', text: 'Kecenderungan mengunggulkan rasionalitas di atas segalanya hingga mengabaikan wahyu.' },
+                                { key: 'C', text: 'Sikap apatis terhadap penemuan bioteknologi modern.' },
+                                { key: 'D', text: 'Fokus hanya pada sains murni tanpa mau menerapkan dalam kehidupan nyata.' },
+                                { key: 'E', text: 'Menggunakan riset teknologi untuk menguasai kompetitor secara tidak sehat.' }
+                            ],
+                            correct: 'A'
+                        },
+                        {
+                            id: 4,
+                            type: 'single',
+                            topic: 'Bukti Beriman',
+                            question: 'Fikri berjanji kepada teman sekelompoknya untuk menyelesaikan bagian slide presentasi PAI pada pukul 19.00 WIB. Namun, ia malah asyik bermain game online hingga lupa waktu. Dilihat dari indikator cabang keimanan (Syu\'abul Iman), tindakan Fikri tergolong...',
+                            options: [
+                                { key: 'A', text: 'Hal biasa dalam dinamika remaja yang tidak berdampak pada kadar keimanan.' },
+                                { key: 'B', text: 'Bentuk cidera terhadap akad/janji yang dapat mengikis kualitas keimanan menuju ciri nifak.' },
+                                { key: 'C', text: 'Dosa besar yang membatalkan keislaman seseorang secara mutlak.' },
+                                { key: 'D', text: 'Ujian kesabaran bagi teman-teman kelompoknya saja.' },
+                                { key: 'E', text: 'Bentuk kelalaian ringan yang cukup dibayar dengan permintaan maaf kasual.' }
+                            ],
+                            correct: 'B'
+                        },
+                        {
+                            id: 5,
+                            type: 'single',
+                            topic: 'Bukti Beriman',
+                            question: 'Allah SWT memberikan nikmat panca indera, kesehatan, dan kesempatan belajar di sekolah unggulan seperti SMAN 1 Mojo. Wujud rasa syukur yang hakiki (Syukur bil Arkan) atas nikmat akal dan panca indera tersebut adalah...',
+                            options: [
+                                { key: 'A', text: 'Cukup mengucapkan "Alhamdulillah" berulang kali tanpa perubahan perilaku.' },
+                                { key: 'B', text: 'Menggunakan potensi panca indera dan akal untuk menuntut ilmu, membela kebenaran, dan berkhidmat kepada masyarakat.' },
+                                { key: 'C', text: 'Pamer keberhasilan akademis di media sosial demi mendapatkan pujian netizen.' },
+                                { key: 'D', text: 'Menyimpan ilmu yang dimiliki agar tidak tersaingi oleh siswa dari kelas lain.' },
+                                { key: 'E', text: 'Memanfaatkan kelebihan fisik untuk menakuti siswa lain yang lebih lemah.' }
+                            ],
+                            correct: 'B'
+                        },
+                        {
+                            id: 6,
+                            type: 'single',
+                            topic: 'Bukti Beriman',
+                            question: 'Dalam sebuah percakapan di kantin, beberapa siswa mulai membicarakan kekurangan dan masalah pribadi salah seorang siswa yang sedang tidak hadir. Perilaku memelihara lisan yang mencerminkan kualitas iman dalam kondisi ini adalah...',
+                            options: [
+                                { key: 'A', text: 'Ikut mendengarkan dengan antusias namun tidak memberi tanggapan.' },
+                                { key: 'B', text: 'Merekam pembicaraan tersebut dan mengunggahnya ke story WhatsApp.' },
+                                { key: 'C', text: 'Mengingatkan teman-temannya secara santun untuk menghentikan ghibah dan mengalihkan topik ke hal positif.' },
+                                { key: 'D', text: 'Pura-pura tidak mendengar lalu memberitahukan pembicaraan itu kepada siswa yang dibicarakan agar marah.' },
+                                { key: 'E', text: 'Tertawa bersama untuk menjaga solidaritas pertemanan.' }
+                            ],
+                            correct: 'C'
+                        },
+                        {
+                            id: 7,
+                            type: 'single',
+                            topic: 'Bukti Beriman',
+                            question: 'Rasulullah SAW bersabda bahwa barangsiapa yang menutupi aib saudaranya sesama Muslim di dunia, maka Allah akan menutupi aibnya di dunia dan akhirat. Penerapan hadis ini dalam kehidupan sekolah adalah...',
+                            options: [
+                                { key: 'A', text: 'Melindungi teman yang tertangkap basah mencuri barang milik sekolah dari hukuman disiplin.' },
+                                { key: 'B', text: 'TIDAK menyebarluaskan kekhilafan/keburukan masa lalu teman yang sudah bertobat dan memperbaiki diri.' },
+                                { key: 'C', text: 'Membantu teman memberikan jawaban palsu saat ujian demi persahabatan.' },
+                                { key: 'D', text: 'Menyimpan rahasia rencana tawuran antar sekolah agar tidak diketahui guru BK.' },
+                                { key: 'E', text: 'Membiarkan pelanggaran hukum terjadi tanpa melapor kepada pihak berwenang.' }
+                            ],
+                            correct: 'B'
+                        },
+                        {
+                            id: 8,
+                            type: 'single',
+                            topic: 'Menghindari Perkelahian & Narkoba',
+                            question: 'Tawuran antar pelajar seringkali dipicu oleh hal sepele seperti saling ejek di media sosial atau persaingan geng. Secara sosiologis-agamis, perkelahian pelajar dikategorikan sebagai tindakan destruktif karena...',
+                            options: [
+                                { key: 'A', text: 'Merusak kehormatan, mengancam keselamatan jiwa, dan bertentangan dengan prinsip ukhuwah islamiyah.' },
+                                { key: 'B', text: 'Hanya merugikan fasilitas umum milik pemerintah.' },
+                                { key: 'C', text: 'Merupakan tradisi remaja yang wajar dalam mencari identitas diri.' },
+                                { key: 'D', text: 'Membuat jadwal pelajaran di sekolah menjadi tertunda.' },
+                                { key: 'E', text: 'Hanya berdampak pada sanksi skorsing dari kepala sekolah.' }
+                            ],
+                            correct: 'A'
+                        },
+                        {
+                            id: 9,
+                            type: 'single',
+                            topic: 'Menghindari Perkelahian & Narkoba',
+                            question: 'Al-Qur\'an secara tegas mengharamkan khamr (minuman keras) dan zat adiktif/narkoba dalam QS. Al-Ma\'idah: 90. Alasan utama diharamkannya khamr dan narkoba berdasarkan maqashid shariah (perlindungan jiwa dan akal) adalah...',
+                            options: [
+                                { key: 'A', text: 'Harganya yang sangat mahal sehingga merugikan secara ekonomi.' },
+                                { key: 'B', text: 'Merusak fungsi akal sehat (Hifzh al-\'Aql) dan memicu timbulnya berbagai kejahatan serta penyakit.' },
+                                { key: 'C', text: 'Dapat menyebabkan rasa kantuk berlebihan saat jam pelajaran.' },
+                                { key: 'D', text: 'Hanya karena minuman keras diimpor dari luar negeri.' },
+                                { key: 'E', text: 'Membuat seseorang menjadi terlalu optimis secara tidak rasional.' }
+                            ],
+                            correct: 'B'
+                        },
+                        {
+                            id: 10,
+                            type: 'single',
+                            topic: 'Menghindari Perkelahian & Narkoba',
+                            question: 'Seorang siswa ditawari oleh oknum di luar sekolah untuk mengonsumsi pil koplo dengan alasan bisa meningkatkan konsentrasi belajar dan menghilangkan stres. Bentuk benteng diri islami yang paling tepat dilakukan siswa tersebut adalah...',
+                            options: [
+                                { key: 'A', text: 'Mencobanya sedikit saja untuk membuktikan kebenaran khasiatnya.' },
+                                { key: 'B', text: 'Menolak dengan tegas, menjauhi lingkungan berisiko, dan berkonsultasi kepada guru BK/orang tua.' },
+                                { key: 'C', text: 'Menerimanya tetapi menyimpannya di dalam tas tanpa diminum.' },
+                                { key: 'D', text: 'Menjual kembali pil tersebut kepada teman lain untuk mendapatkan uang jajan.' },
+                                { key: 'E', text: 'Mendiamkan hal tersebut karena takut diancam oleh oknum penawar.' }
+                            ],
+                            correct: 'B'
+                        },
+
+                        // --- 10 PILIHAN GANDA KOMPLEKS (11 - 20) ---
+                        {
+                            id: 11,
+                            type: 'complex',
+                            topic: 'Berpikir Kritis & IPTEK',
+                            question: 'Manakah dari pernyataan berikut yang merupakan ciri-ciri orang yang berpikir kritis (Ulul Albab) sesuai dengan isi kandungan QS. Ali Imran: 190-191? (Pilih semua yang benar)',
+                            options: [
+                                { key: 'A', text: 'Selalu mengingat Allah (dzikrullah) dalam berbagai keadaan fisik.' },
+                                { key: 'B', text: 'Merenungkan dan menganalisis proses penciptaan langit dan bumi (tafakkur).' },
+                                { key: 'C', text: 'Meyakini bahwa segala ciptaan Allah tidak ada yang sia-sia (batil).' },
+                                { key: 'D', text: 'Mengandalkan akal secara mutlak tanpa membutuhkan petunjuk Kitab Suci.' },
+                                { key: 'E', text: 'Mendorong rasa syukur dan doa agar terhindar dari siksa api neraka.' }
+                            ],
+                            correct: ['A', 'B', 'C', 'E']
+                        },
+                        {
+                            id: 12,
+                            type: 'complex',
+                            topic: 'Berpikir Kritis & IPTEK',
+                            question: 'Dalam era Revolusi Industri 4.0 dan Society 5.0, siswa disuguhi kemajuan teknologi AI dan Big Data. Sikap mencintai IPTEK yang selaras dengan nilai-nilai Islam meliputi: (Pilih semua jawaban yang benar)',
+                            options: [
+                                { key: 'A', text: 'Menggunakan AI untuk membantu efisiensi riset dengan tetap menjaga integritas akademik (tanpa plagiarisme).' },
+                                { key: 'B', text: 'Mengembangkan perangkat lunak yang bermanfaat bagi kemaslahatan masyarakat umum.' },
+                                { key: 'C', text: 'Memanfaatkan keahlian koding untuk membobol sistem data bank atau sekolah.' },
+                                { key: 'D', text: 'Mempelajari sains modern sebagai wujud pengamalan perintah menuntut ilmu (Thalabul \'Ilmi).' },
+                                { key: 'E', text: 'Menolak semua perkembangan teknologi modern karena dianggap produk barat.' }
+                            ],
+                            correct: ['A', 'B', 'D']
+                        },
+                        {
+                            id: 13,
+                            type: 'complex',
+                            topic: 'Bukti Beriman - Memenuhi Janji',
+                            question: 'Memenuhi janji (Al-Wafa bil \'Ahdi) merupakan bukti keimanan yang sangat ditekankan. Berikut ini merupakan konsekuensi positif dari kebiasaan menepati janji dalam kehidupan bermasyarakat: (Pilih jawaban yang benar)',
+                            options: [
+                                { key: 'A', text: 'Membangun kepercayaan (trust) dan kredibilitas diri di mata sesama.' },
+                                { key: 'B', text: 'Menjaga keharmonisan dan ketentraman hubungan antarpersonal.' },
+                                { key: 'C', text: 'Terhindar dari sifat munafik yang dibenci Allah SWT.' },
+                                { key: 'D', text: 'Membuat orang lain merasa takut dan segan secara berlebihan.' },
+                                { key: 'E', text: 'Mendapatkan jaminan kehormatan dan ridha dari Allah SWT.' }
+                            ],
+                            correct: ['A', 'B', 'C', 'E']
+                        },
+                        {
+                            id: 14,
+                            type: 'complex',
+                            topic: 'Bukti Beriman - Mensyukuri Nikmat',
+                            question: 'Mensyukuri nikmat Allah SWT dapat dilakukan melalui tiga tingkatan dimensi. Manakah pasangan bentuk syukur yang TEPAT sesuai dimensinya berikut ini? (Pilih jawaban yang benar)',
+                            options: [
+                                { key: 'A', text: 'Syukur dengan Hati: Menyutujui dan meyakini bahwa segala nikmat berasal murni dari Allah SWT.' },
+                                { key: 'B', text: 'Syukur dengan Lisan: Mengucapkan tahmid (Alhamdulillah) serta memuji kebaikan-Nya.' },
+                                { key: 'C', text: 'Syukur dengan Perbuatan: Menggunakan rezeki dan potensi diri untuk taat dan beramal saleh.' },
+                                { key: 'D', text: 'Syukur dengan Hati: Menganggap keberhasilan semata-mata karena kecerdasan pribadi.' },
+                                { key: 'E', text: 'Syukur dengan Perbuatan: Memamerkan kekayaan di media sosial agar diakui orang lain.' }
+                            ],
+                            correct: ['A', 'B', 'C']
+                        },
+                        {
+                            id: 15,
+                            type: 'complex',
+                            topic: 'Bukti Beriman - Memelihara Lisan',
+                            question: 'Lisan adalah cerminan dari hati seseorang. Bentuk bahaya lidah/lisan yang harus dihindari oleh seorang pelajar beriman antara lain: (Pilih semua jawaban yang sesuai)',
+                            options: [
+                                { key: 'A', text: 'Ghibah (membicarakan keburukan orang lain yang memang benar ada).' },
+                                { key: 'B', text: 'Buhtan (fitnah/menyebarkan tuduhan tidak berdasar).' },
+                                { key: 'C', text: 'Namimah (adu domba antar sesama teman/kelompok).' },
+                                { key: 'D', text: 'Nasihat (menyampaikan kebenaran secara santun).' },
+                                { key: 'E', text: 'Tajassus (mencari-cari kesalahan orang lain untuk disebar).' }
+                            ],
+                            correct: ['A', 'B', 'C', 'E']
+                        },
+                        {
+                            id: 16,
+                            type: 'complex',
+                            topic: 'Bukti Beriman - Menutupi Aib',
+                            question: 'Setiap manusia tidak luput dari kesalahan. Prinsip Islam dalam menyikapi aib atau keburukan orang lain meliputi: (Pilih semua jawaban yang benar)',
+                            options: [
+                                { key: 'A', text: 'Menjaga rahasia keburukan pribadi saudara sesama Muslim yang tidak merugikan umum.' },
+                                { key: 'B', text: 'Mendoakan agar orang yang bersangkutan mendapat hidayah dan bertobat.' },
+                                { key: 'C', text: 'Menyebarkan keburukan di forum publik dengan dalih pembelajaran bersama.' },
+                                { key: 'D', text: 'Melaporkan tindak kejahatan kriminal kepada aparat berwenang (bukan tergolong ghibah terlarang).' },
+                                { key: 'E', text: 'Membuat konten gosip demi menambah jumlah pengikut sosial media.' }
+                            ],
+                            correct: ['A', 'B', 'D']
+                        },
+                        {
+                            id: 17,
+                            type: 'complex',
+                            topic: 'Menghindari Perkelahian',
+                            question: 'Faktor pemicu perkelahian dan tawuran antar pelajar dapat berasal dari faktor internal maupun eksternal. Yang termasuk faktor internal (dari dalam diri pelajar) adalah: (Pilih semua jawaban yang benar)',
+                            options: [
+                                { key: 'A', text: 'Ketidakmampuan mengendalikan emosi dan amarah (gadhab).' },
+                                { key: 'B', text: 'Krisis identitas dan dorongan gengsi kelompok yang keliru.' },
+                                { key: 'C', text: 'Kurangnya pemahaman terhadap nilai-nilai toleransi dan persaudaraan.' },
+                                { key: 'D', text: 'Pengaruh provokasi dari almamater senior di luar sekolah.' },
+                                { key: 'E', text: 'Minimnya sarana lapangan olahraga di lingkungan tempat tinggal.' }
+                            ],
+                            correct: ['A', 'B', 'C']
+                        },
+                        {
+                            id: 18,
+                            type: 'complex',
+                            topic: 'Menghindari Miras & Narkoba',
+                            question: 'Dampak negatif penggunaan narkoba dan minuman keras di kalangan generasi muda meliputi berbagai aspek kehidupannya, yaitu: (Pilih jawaban yang benar)',
+                            options: [
+                                { key: 'A', text: 'Aspek Fisik: Merusak organ tubuh seperti hati, otak, dan sistem saraf.' },
+                                { key: 'B', text: 'Aspek Psikologis: Menyebabkan ketergantungan, emosi tidak stabil, dan depresi.' },
+                                { key: 'C', text: 'Aspek Sosial: Merusak hubungan keluarga dan mengikis norma kemasyarakatan.' },
+                                { key: 'D', text: 'Aspek Spiritual: Menjauhkan diri dari mengingat Allah dan merusak iman.' },
+                                { key: 'E', text: 'Aspek Akademis: Meningkatkan daya ingat dan kemampuan kognitif jangka panjang.' }
+                            ],
+                            correct: ['A', 'B', 'C', 'D']
+                        },
+                        {
+                            id: 19,
+                            type: 'complex',
+                            topic: 'Menghindari Miras & Narkoba',
+                            question: 'Islam menawarkan solusi preventif dan kuratif untuk menanggulangi bahaya penyalahgunaan miras dan narkoba, di antaranya adalah: (Pilih semua jawaban yang benar)',
+                            options: [
+                                { key: 'A', text: 'Penguatan keimanan dan ketakwaan melalui ibadah rutin dan dzikir.' },
+                                { key: 'B', text: 'Memilih lingkungan pergaulan dan sahabat yang saleh/salehah.' },
+                                { key: 'C', text: 'Mengisi waktu luang dengan kegiatan positif (olahraga, seni, organisasi).' },
+                                { key: 'D', text: 'Membuka usaha warung khamr skala kecil untuk melatih kewirausahaan.' },
+                                { key: 'E', text: 'Edukasi dan penegakan hukum secara tegas bagi para pengedar.' }
+                            ],
+                            correct: ['A', 'B', 'C', 'E']
+                        },
+                        {
+                            id: 20,
+                            type: 'complex',
+                            topic: 'Syu\'abul Iman & Akhlak',
+                            question: 'Ibadah ritual (seperti shalat dan puasa) harus berbanding lurus dengan ibadah sosial (akhlak). Pernyataan di bawah ini yang menggambarkan keterkaitan utuh cabang-cabang iman adalah: (Pilih jawaban yang benar)',
+                            options: [
+                                { key: 'A', text: 'Orang yang taat beribadah pasti akan menjaga lisannya dari menyakiti tetangga.' },
+                                { key: 'B', text: 'Mencintai IPTEK harus dibingkai dengan ketakwaan agar tidak destruktif.' },
+                                { key: 'C', text: 'Menjauhi narkoba adalah bagian dari menjaga amanah kesehatan fisik dari Allah.' },
+                                { key: 'D', text: 'Memenuhi janji hanya wajib dilakukan kepada sesama Muslim saja.' },
+                                { key: 'E', text: 'Menutupi aib sesama adalah wujud cerminan sifat Ar-Rahman dan Ar-Rahim.' }
+                            ],
+                            correct: ['A', 'B', 'C', 'E']
+                        },
+
+                        // --- 10 PILIHAN GANDA KATEGORI (21 - 30) ---
+                        {
+                            id: 21,
+                            type: 'category',
+                            topic: 'Berpikir Kritis & IPTEK',
+                            question: 'Klasifikasikan setiap tindakan berikut apakah tergolong dalam penerapan "Berpikir Kritis Islami" atau "Bukan Berpikir Kritis":',
+                            categories: ['Berpikir Kritis Islami', 'Bukan Berpikir Kritis'],
+                            items: [
+                                { statement: 'Menganalisis sebab-akibat fenomena alam sebelum menyimpulkan keagungan Pencipta.', correct: 'Berpikir Kritis Islami' },
+                                { statement: 'Langsung meyakini berita viral di TikTok tanpa memeriksa kebenaran data.', correct: 'Bukan Berpikir Kritis' },
+                                { statement: 'Menggunakan metodologi ilmiah untuk memecahkan masalah pencemaran lingkungan.', correct: 'Berpikir Kritis Islami' },
+                                { statement: 'Menolak teori riset medis terbaru semata-mata karena tidak dipahami.', correct: 'Bukan Berpikir Kritis' }
+                            ]
+                        },
+                        {
+                            id: 22,
+                            type: 'category',
+                            topic: 'Berpikir Kritis & IPTEK',
+                            question: 'Tentukan kategori aspek dari pengembangan IPTEK berikut sesuai dengan kaidah syariat (Sesuai Syariat / Melanggar Syariat):',
+                            categories: ['Sesuai Syariat', 'Melanggar Syariat'],
+                            items: [
+                                { statement: 'Riset rekayasa genetika tanaman untuk mengatasi kelaparan dunia.', correct: 'Sesuai Syariat' },
+                                { statement: 'Pengembangan senjata biologis pemusnah massal untuk peperangan.', correct: 'Melanggar Syariat' },
+                                { statement: 'Pembuatan aplikasi Al-Qur\'an digital dengan fitur penerjemah otomatis.', correct: 'Sesuai Syariat' },
+                                { statement: 'Penggunaan algoritma AI untuk menyebarkan propaganda kebencian (deepfake).', correct: 'Melanggar Syariat' }
+                            ]
+                        },
+                        {
+                            id: 23,
+                            type: 'category',
+                            topic: 'Bukti Beriman - Janji & Syukur',
+                            question: 'Identifikasi bentuk perilaku berikut ke dalam kategori cabang iman yang tepat (Memenuhi Janji / Mensyukuri Nikmat):',
+                            categories: ['Memenuhi Janji', 'Mensyukuri Nikmat'],
+                            items: [
+                                { statement: 'Mengembalikan buku perpustakaan sekolah sesuai dengan tanggal janji komitmen.', correct: 'Memenuhi Janji' },
+                                { statement: 'Memanfaatkan ketajaman penglihatan untuk membaca dan mempelajari Al-Qur\'an.', correct: 'Mensyukuri Nikmat' },
+                                { statement: 'Menjaga ikrar janji setia kepada Pancasila dan NKRI sebagai warga negara.', correct: 'Memenuhi Janji' },
+                                { statement: 'Menggunakan tubuh yang sehat untuk bergotong-royong membersihkan lingkungan.', correct: 'Mensyukuri Nikmat' }
+                            ]
+                        },
+                        {
+                            id: 24,
+                            type: 'category',
+                            topic: 'Bukti Beriman - Lisan & Aib',
+                            question: 'Tentukan apakah tindakan penggunaan lisan berikut tergolong dalam "Tindakan Terpuji (Mahmudah)" atau "Tindakan Tercela (Madzmumah)":',
+                            categories: ['Terpuji (Mahmudah)', 'Tercela (Madzmumah)'],
+                            items: [
+                                { statement: 'Menyampaikan kritikan konstruktif kepada pengurus OSIS dengan tutur kata sopan.', correct: 'Terpuji (Mahmudah)' },
+                                { statement: 'Menyebarkan isu keburukan keluarga teman di grup obrolan media sosial.', correct: 'Tercela (Madzmumah)' },
+                                { statement: 'Menenangkan dua kawan yang sedang berselisih paham dengan kata-kata damai.', correct: 'Terpuji (Mahmudah)' },
+                                { statement: 'Mengagung-agungkan kelebihan diri sendiri sembari merendahkan kawan lain.', correct: 'Tercela (Madzmumah)' }
+                            ]
+                        },
+                        {
+                            id: 25,
+                            type: 'category',
+                            topic: 'Bukti Beriman - Menutupi Aib',
+                            question: 'Tentukan Kategori Hukum Islam terkait sikap menutupi aib seseorang (Wajib Ditutup / Boleh/Wajib Dilaporkan):',
+                            categories: ['Wajib Ditutup', 'Boleh/Wajib Dilaporkan'],
+                            items: [
+                                { statement: 'Aib kekhilafan pribadi seseorang di masa lalu yang sudah ia sesali dan bertobat.', correct: 'Wajib Ditutup' },
+                                { statement: 'Aksi sindikat peredaran obat terlarang narkoba di sekitar area sekolah.', correct: 'Boleh/Wajib Dilaporkan' },
+                                { statement: 'Kekurangan fisik atau cacat bawaan lahir yang dimiliki oleh kawan sekelas.', correct: 'Wajib Ditutup' },
+                                { statement: 'Tindakan penganiayaan kekerasan fisik secara terencana terhadap siswa bawah umur.', correct: 'Boleh/Wajib Dilaporkan' }
+                            ]
+                        },
+                        {
+                            id: 26,
+                            type: 'category',
+                            topic: 'Menghindari Perkelahian',
+                            question: 'Kelompokkan pendekatan berikut dalam mengatasi masalah tawuran pelajar (Pendekatan Preventif / Pendekatan Kuratif):',
+                            categories: ['Pendekatan Preventif', 'Pendekatan Kuratif'],
+                            items: [
+                                { statement: 'Penyelenggaraan ekstrakurikuler bela diri dan olahraga kompetitif positif antar kelas.', correct: 'Pendekatan Preventif' },
+                                { statement: 'Pemberian sanksi pemanggilan orang tua dan pembimbingan intensif bagi pelaku tawuran.', correct: 'Pendekatan Kuratif' },
+                                { statement: 'Pendidikan karakter dan kajian rutin kepemudaan islami di masjid sekolah.', correct: 'Pendekatan Preventif' },
+                                { statement: 'Proses penegakan disiplin dan rehabilitasi sosial bagi remaja tersangkut perkelahian.', correct: 'Pendekatan Kuratif' }
+                            ]
+                        },
+                        {
+                            id: 27,
+                            type: 'category',
+                            topic: 'Menghindari Miras & Narkoba',
+                            question: 'Klasifikasikan zat/minuman berikut berdasarkan kepastian hukum haramnya dalam Islam (Termasuk Khamr/Narkoba / Tidak Haram):',
+                            categories: ['Haram (Khamr/Narkoba)', 'Tidak Haram (Halal)'],
+                            items: [
+                                { statement: 'Minuman beralkohol dosis tinggi seperti bir, anggur merah, dan whiskey.', correct: 'Haram (Khamr/Narkoba)' },
+                                { statement: 'Jus buah murni tanpa fermentasi beralkohol.', correct: 'Tidak Haram (Halal)' },
+                                { statement: 'Obat-obatan psikotropika jenis sabu-sabu, ganja, dan ekstasi.', correct: 'Haram (Khamr/Narkoba)' },
+                                { statement: 'Minuman herbal suplemen kesehatan berizin resmi BPOM dan bersertifikat Halal.', correct: 'Tidak Haram (Halal)' }
+                            ]
+                        },
+                        {
+                            id: 28,
+                            type: 'category',
+                            topic: 'Bahaya Narkoba',
+                            question: 'Tentukan Dampak Utama dari konsumsi narkotika dan miras berikut berdasarkan jenis kategorinya (Dampak Fisik / Dampak Psikologis):',
+                            categories: ['Dampak Fisik', 'Dampak Psikologis'],
+                            items: [
+                                { statement: 'Kerusakan permanen pada sel-sel organ hati (sirosis) dan ginjal.', correct: 'Dampak Fisik' },
+                                { statement: 'Timbulnya halusinasi parah, paranoid, dan rasa cemas berlebihan.', correct: 'Dampak Psikologis' },
+                                { statement: 'Mengalami penurunan tingkat kesadaran secara drastis serta kejang.', correct: 'Dampak Fisik' },
+                                { statement: 'Ketagihan (adiksi) tinggi dan depresi berat saat zat adiktif habis.', correct: 'Dampak Psikologis' }
+                            ]
+                        },
+                        {
+                            id: 29,
+                            type: 'category',
+                            topic: 'Integrasi Nilai Karakter',
+                            question: 'Tentukan nilai dimensi profil pelajar pancasila/islami yang paling sesuai untuk narasi berikut (Kritis & Kreatif / Mandiri & Bertakwa):',
+                            categories: ['Kritis & Kreatif', 'Mandiri & Bertakwa'],
+                            items: [
+                                { statement: 'Membuat podcast riset sains islami untuk meluruskan hoaks di internet.', correct: 'Kritis & Kreatif' },
+                                { statement: 'Teguh menolak ajakan meminum miras meskipun dijauhi oleh kelompok sebaya.', correct: 'Mandiri & Bertakwa' },
+                                { statement: 'Mengembangkan sistem penyaringan air minum bersih sederhana menggunakan metode IPTEK.', correct: 'Kritis & Kreatif' },
+                                { statement: 'Selalu menepati janji belajar mandiri dan menjaga ibadah shalat 5 waktu.', correct: 'Mandiri & Bertakwa' }
+                            ]
+                        },
+                        {
+                            id: 30,
+                            type: 'category',
+                            topic: 'Evaluasi Konsep HOTS',
+                            question: 'Klasifikasikan pernyataan berikut apakah tergolong Benar atau Salah terkait kaidah moralitas Islam:',
+                            categories: ['Benar', 'Salah'],
+                            items: [
+                                { statement: 'Menutupi kejahatan kriminal pencurian barang sekolah tergolong sebagai menutupi aib yang diajarkan agama.', correct: 'Salah' },
+                                { statement: 'Orang yang berpikir kritis menurut Al-Qur\'an adalah orang yang menyeimbangkan antara dzikir dan pikir.', correct: 'Benar' },
+                                { statement: 'Narkoba dan miras diperbolehkan jika diminum dalam jumlah sangat sedikit untuk pergaulan.', correct: 'Salah' },
+                                { statement: 'Mensyukuri nikmat lisannya ditunjukkan dengan menghindari berita bohong dan pergunjingan.', correct: 'Benar' }
+                            ]
+                        }
+                    ]
+                }
+            },
+
+            computed: {
+                currentQuestion() {
+                    return this.questions[this.currentQuestionIndex];
+                },
+                unansweredCount() {
+                    let count = 0;
+                    this.questions.forEach((q, idx) => {
+                        if (!this.isQuestionAnswered(idx) || this.isQuestionFlagged(idx)) {
+                            count++;
+                        }
+                    });
+                    return count;
+                },
+                filteredResults() {
+                    if (this.filterClass === 'ALL') return this.studentResults;
+                    return this.studentResults.filter(r => r.class === this.filterClass);
+                },
+                calculatedAverageScore() {
+                    if (this.studentResults.length === 0) return '0.0';
+                    const sum = this.studentResults.reduce((acc, curr) => acc + curr.scoreDetails.totalScore, 0);
+                    return (sum / this.studentResults.length).toFixed(1);
+                }
+            },
+
+            mounted() {
+                // Load saved results and admin password from local storage if existing
+                const savedRes = localStorage.getItem('pai_cbt_results');
+                if (savedRes) {
+                    try { this.studentResults = JSON.parse(savedRes); } catch(e){}
+                }
+
+                const savedPass = localStorage.getItem('pai_cbt_admin_pass');
+                if (savedPass) this.currentAdminPassword = savedPass;
+
+                const savedSettings = localStorage.getItem('pai_cbt_settings');
+                if (savedSettings) {
+                    try { this.appSettings = JSON.parse(savedSettings); } catch(e){}
+                }
+
+                // Prevent accidentally navigating away during active exam
+                window.addEventListener('beforeunload', (e) => {
+                    if (this.currentMode === 'exam') {
+                        e.preventDefault();
+                        e.returnValue = '';
+                    }
+                });
+            },
+
+            methods: {
+                switchView(mode) {
+                    this.currentMode = mode;
+                    this.loginError = '';
+                    this.adminLoginError = '';
+                },
+
+                formatTime(seconds) {
+                    const m = Math.floor(seconds / 60);
+                    const s = seconds % 60;
+                    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                },
+
+                getCategoryLabel(type) {
+                    if (type === 'single') return 'Pilihan Ganda Tunggal';
+                    if (type === 'complex') return 'Pilihan Ganda Kompleks';
+                    if (type === 'category') return 'Pilihan Ganda Kategori';
+                    return 'Soal';
+                },
+
+                // START EXAM LOGIC
+                startExam() {
+                    if (!this.student.name.trim()) {
+                        this.loginError = 'Nama lengkap siswa wajib diisi!';
+                        return;
+                    }
+                    if (!this.student.class) {
+                        this.loginError = 'Silakan pilih kelas Anda!';
+                        return;
+                    }
+                    if (this.student.token.trim().toUpperCase() !== this.appSettings.token.toUpperCase()) {
+                        this.loginError = 'Token Ujian salah atau tidak valid!';
+                        return;
+                    }
+
+                    this.loginError = '';
+                    this.currentQuestionIndex = 0;
+                    this.userAnswers = {};
+                    this.flaggedQuestions = {};
+                    this.remainingTime = this.appSettings.durationMinutes * 60;
+
+                    this.currentMode = 'exam';
+                    this.startTimer();
+                },
+
+                startTimer() {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = setInterval(() => {
+                        if (this.remainingTime > 0) {
+                            this.remainingTime--;
+                        } else {
+                            clearInterval(this.timerInterval);
+                            this.submitExam(); // Auto submit when time's up
+                        }
+                    }, 1000);
+                },
+
+                // QUESTION NAVIGATION & ANSWER LOGIC
+                goToQuestion(index) {
+                    this.currentQuestionIndex = index;
+                },
+                nextQuestion() {
+                    if (this.currentQuestionIndex < this.questions.length - 1) {
+                        this.currentQuestionIndex++;
+                    }
+                },
+                prevQuestion() {
+                    if (this.currentQuestionIndex > 0) {
+                        this.currentQuestionIndex--;
+                    }
+                },
+                toggleFlag() {
+                    this.flaggedQuestions[this.currentQuestionIndex] = !this.flaggedQuestions[this.currentQuestionIndex];
+                },
+                isQuestionFlagged(index) {
+                    return !!this.flaggedQuestions[index];
+                },
+
+                // Single Type
+                selectSingleAnswer(key) {
+                    this.userAnswers[this.currentQuestion.id] = key;
+                },
+
+                // Complex Type
+                toggleComplexAnswer(key) {
+                    const qId = this.currentQuestion.id;
+                    if (!Array.isArray(this.userAnswers[qId])) {
+                        this.userAnswers[qId] = [];
+                    }
+                    const idx = this.userAnswers[qId].indexOf(key);
+                    if (idx > -1) {
+                        this.userAnswers[qId].splice(idx, 1);
+                    } else {
+                        this.userAnswers[qId].push(key);
+                    }
+                },
+                isComplexSelected(key) {
+                    const qId = this.currentQuestion.id;
+                    return Array.isArray(this.userAnswers[qId]) && this.userAnswers[qId].includes(key);
+                },
+
+                // Category Type
+                setCategoryAnswer(itemIdx, category) {
+                    const qId = this.currentQuestion.id;
+                    if (!this.userAnswers[qId] || typeof this.userAnswers[qId] !== 'object' || Array.isArray(this.userAnswers[qId])) {
+                        this.userAnswers[qId] = {};
+                    }
+                    this.userAnswers[qId][itemIdx] = category;
+                },
+                getCategoryAnswer(itemIdx) {
+                    const qId = this.currentQuestion.id;
+                    if (this.userAnswers[qId] && typeof this.userAnswers[qId] === 'object') {
+                        return this.userAnswers[qId][itemIdx] || null;
+                    }
+                    return null;
+                },
+
+                isQuestionAnswered(index) {
+                    const q = this.questions[index];
+                    const ans = this.userAnswers[q.id];
+                    if (ans === undefined || ans === null) return false;
+                    if (q.type === 'single') return ans !== '';
+                    if (q.type === 'complex') return Array.isArray(ans) && ans.length > 0;
+                    if (q.type === 'category') {
+                        return Object.keys(ans).length === q.items.length;
+                    }
+                    return false;
+                },
+
+                confirmSubmit() {
+                    this.showConfirmModal = true;
+                },
+
+                // SUBMIT & SCORING ALGORITHM
+                submitExam() {
+                    clearInterval(this.timerInterval);
+                    this.showConfirmModal = false;
+
+                    let singleCorrect = 0;
+                    let complexCorrect = 0;
+                    let categoryCorrect = 0;
+
+                    this.questions.forEach((q) => {
+                        const ans = this.userAnswers[q.id];
+                        if (!ans) return;
+
+                        if (q.type === 'single') {
+                            if (ans === q.correct) singleCorrect++;
+                        } else if (q.type === 'complex') {
+                            // Check exact array match
+                            if (Array.isArray(ans)) {
+                                const isSameLength = ans.length === q.correct.length;
+                                const allMatched = q.correct.every(val => ans.includes(val));
+                                if (isSameLength && allMatched) complexCorrect++;
+                            }
+                        } else if (q.type === 'category') {
+                            // Check all items category match
+                            let allItemsCorrect = true;
+                            q.items.forEach((item, itemIdx) => {
+                                if (ans[itemIdx] !== item.correct) {
+                                    allItemsCorrect = false;
+                                }
+                            });
+                            if (allItemsCorrect) categoryCorrect++;
+                        }
+                    });
+
+                    // Each category worth 10 questions = 33.33 points each category, totaling 100 points scale
+                    const totalScore = ((singleCorrect / 10) * 33.33) + ((complexCorrect / 10) * 33.33) + ((categoryCorrect / 10) * 33.34);
+
+                    this.calculatedScore = {
+                        totalScore: Math.min(100, Math.round(totalScore * 10) / 10),
+                        singleCount: singleCorrect,
+                        complexCount: complexCorrect,
+                        categoryCount: categoryCorrect
+                    };
+
+                    const now = new Date();
+                    this.submitTime = now.toLocaleString('id-ID');
+
+                    // Record result entry
+                    const newResult = {
+                        name: this.student.name,
+                        class: this.student.class,
+                        timestamp: this.submitTime,
+                        scoreDetails: this.calculatedScore,
+                        rawAnswers: JSON.parse(JSON.stringify(this.userAnswers))
+                    };
+
+                    this.studentResults.unshift(newResult);
+                    localStorage.setItem('pai_cbt_results', JSON.stringify(this.studentResults));
+
+                    // Send to Google Sheets Webhook if configured
+                    if (this.appSettings.webhookUrl && this.appSettings.webhookUrl.trim() !== '') {
+                        try {
+                            fetch(this.appSettings.webhookUrl, {
+                                method: 'POST',
+                                mode: 'no-cors',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(newResult)
+                            });
+                        } catch (e) {
+                            console.log('Webhook sync error:', e);
+                        }
+                    }
+
+                    this.currentMode = 'result';
+                },
+
+                // ADMIN METHODS
+                loginAdmin() {
+                    if (this.adminPasswordInput === this.currentAdminPassword) {
+                        this.adminLoginError = '';
+                        this.adminPasswordInput = '';
+                        this.currentMode = 'admin-panel';
+                    } else {
+                        this.adminLoginError = 'Password admin salah!';
+                    }
+                },
+
+                changeAdminPassword() {
+                    if (this.passwordForm.oldPass !== this.currentAdminPassword) {
+                        this.passwordStatus = { msg: 'Password lama salah!', isError: true };
+                        return;
+                    }
+                    if (!this.passwordForm.newPass || this.passwordForm.newPass.length < 4) {
+                        this.passwordStatus = { msg: 'Password baru minimal 4 karakter!', isError: true };
+                        return;
+                    }
+                    if (this.passwordForm.newPass !== this.passwordForm.confirmPass) {
+                        this.passwordStatus = { msg: 'Konfirmasi password baru tidak cocok!', isError: true };
+                        return;
+                    }
+
+                    this.currentAdminPassword = this.passwordForm.newPass;
+                    localStorage.setItem('pai_cbt_admin_pass', this.currentAdminPassword);
+                    
+                    this.passwordForm = { oldPass: '', newPass: '', confirmPass: '' };
+                    this.passwordStatus = { msg: 'Password admin berhasil diubah!', isError: false };
+                },
+
+                saveSettings() {
+                    localStorage.setItem('pai_cbt_settings', JSON.stringify(this.appSettings));
+                    alert('Pengaturan Ujian berhasil disimpan!');
+                },
+
+                clearAllResults() {
+                    if (confirm('Apakah Anda yakin ingin menghapus seluruh data hasil ujian siswa? Action ini tidak bisa dibatalkan.')) {
+                        this.studentResults = [];
+                        localStorage.removeItem('pai_cbt_results');
+                    }
+                },
+
+                // EXPORT SPREADSHEET (CSV)
+                exportToCSV() {
+                    if (this.studentResults.length === 0) {
+                        alert('Belum ada data hasil ujian untuk diunduh.');
+                        return;
+                    }
+
+                    let csvContent = "data:text/csv;charset=utf-8,";
+                    csvContent += "No,Waktu Selesai,Nama Siswa,Kelas,PG Tunggal (/10),PG Kompleks (/10),PG Kategori (/10),Nilai Akhir (/100)\n";
+
+                    this.studentResults.forEach((res, index) => {
+                        const row = [
+                            index + 1,
+                            `"${res.timestamp}"`,
+                            `"${res.name}"`,
+                            `"${res.class}"`,
+                            res.scoreDetails.singleCount,
+                            res.scoreDetails.complexCount,
+                            res.scoreDetails.categoryCount,
+                            res.scoreDetails.totalScore
+                        ].join(",");
+                        csvContent += row + "\n";
+                    });
+
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", `Hasil_Ujian_PAI_XI_SMAN1MOJO_${new Date().toISOString().slice(0,10)}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
